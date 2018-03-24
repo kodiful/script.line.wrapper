@@ -6,9 +6,16 @@
       strings 33000 thru 33999 reserved for common strings used in add-ons
   -->
   <category label="32000">
-    <setting label="32011" id="chrome" type="file" default=""/>
+    <setting label="32001" id="email" type="text" default=""/>
+    <setting label="32002" id="password" type="text" option="hidden" default=""/>
+    <setting label="32003" id="talkroom" type="text" default=""/>
   </category>
   <category label="32100">
-    <setting label="32104" id="debug" type="bool" default="false"/>
+    <setting label="32101" id="executable_path" type="file" default=""/>
+    <setting label="32102" id="extension_path" type="file" default=""/>
+    <setting label="32103" id="app_id" type="text" default=""/>
+  </category>
+  <category label="32200">
+    <setting label="32201" id="debug" type="bool" default="false"/>
   </category>
 </settings>

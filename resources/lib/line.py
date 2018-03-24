@@ -5,7 +5,6 @@ import datetime, re, hashlib
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 from common import log, notify
-from datelabel import datelabel
 
 # import selenium
 ADDON = xbmcaddon.Addon()
@@ -13,39 +12,19 @@ sys.path.append(os.path.join(xbmc.translatePath(ADDON.getAddonInfo('path')), 're
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-# settings
-extension_path = '/Users/uchiyama/Library/Application Support/Google/Chrome/Default/Extensions/ophjlpahpchlmihnnnihgmmeilfjmjjc/2.1.3_0.crx'
-appid = 'ophjlpahpchlmihnnnihgmmeilfjmjjc'
-email = 'uchiyama@mac.com'
-password = '57577sss'
-talkroom = 'ウッチー'
-
-class Monitor(xbmc.Monitor):
-
-    def __init__(self, *args, **kwargs):
-        xbmc.Monitor.__init__(self)
-
-    def onSettingsChanged(self):
-        log('settings changed')
-
-    def onScreensaverActivated(self):
-        log('screensaver activated')
-
-    def onScreensaverDeactivated(self):
-        log('screensaver deactivated')
-
 class Line:
 
-    def __init__(self, executable_path):
+    def __init__(self, executable_path, extension_path, app_id):
         # ウェブドライバを設定
         chrome_options = Options()
         chrome_options.add_extension(extension_path)
         self.driver = webdriver.Chrome(executable_path=executable_path, chrome_options=chrome_options)
+        self.app_id = app_id
 
-    def start(self):
+    def login(self, email, password):
         # ページ読み込み
         self.driver.implicitly_wait(10)
-        self.driver.get('chrome-extension://%s/index.html' % appid)
+        self.driver.get('chrome-extension://%s/index.html' % self.app_id)
         # メールアドレス
         elem = self.driver.find_element_by_id('line_login_email')
         elem.send_keys(email)
@@ -55,41 +34,15 @@ class Line:
         # ログイン
         elem = self.driver.find_element_by_id('login_btn')
         elem.click()
-        # 本人確認コード
+        # 本人確認コードを通知
         elem = self.driver.find_element_by_xpath("//div[@class='mdCMN01Code']")
-        notify('Enter %s' % elem.text)
+        notify('Enter %s on mobile LINE' % elem.text)
+
+    def select(self, talkroom):
         # トークルーム
         self.driver.implicitly_wait(60)
         elem = self.driver.find_element_by_xpath("//li[@title='%s']" % talkroom)
         elem.click()
-        # メッセージ検索
-        messages = self.watch()
-        # メッセージ検索
-        '''monitor = Monitor()
-        hash = None
-        while not monitor.abortRequested():
-            if monitor.waitForAbort(3): break
-            messages = self.watch()
-            hash1 = hashlib.md5(str(messages)).hexdigest()
-            if hash != hash1:
-                if hash and len(messages)>0: notify('%04d-%02d-%02d %02d:%02d %s' % messages[-1])
-                hash = hash1'''
-        # 終了
-        self.driver.close()
-        # メニュー生成
-    	for message in messages:
-            (year,month,day,hour,minute,src,msg) = message
-            # 日時
-            dstr = datelabel(year,month,day,hour,minute)
-            # メッセージ
-            mstr = msg
-            if src == '>':
-                mstr = '[COLOR yellow]%s[/COLOR]' % msg
-            # メニュー
-            item = xbmcgui.ListItem('%s %s' % (dstr,mstr))
-            #item.addContextMenuItems(context_menu, replaceItems=True)
-    	    xbmcplugin.addDirectoryItem(int(sys.argv[1]), '', item, False)
-        xbmcplugin.endOfDirectory(int(sys.argv[1]), True)
 
     def watch(self):
         # メッセージ
@@ -120,6 +73,15 @@ class Line:
                 else:
                     src = ''
                 # 格納
-                messages.append((d.year,d.month,d.day,hour,minute,src,msg))
+                message = {
+                    'year': d.year,
+                    'month': d.month,
+                    'day': d.day,
+                    'hour': hour,
+                    'minute': minute,
+                    'src': src,
+                    'msg': msg.encode('utf-8')
+                }
+                messages.append(message)
                 #log('%04d-%02d-%02d %02d:%02d %s %s' % (d.year,d.month,d.day,hour,minute,src,msg))
         return messages

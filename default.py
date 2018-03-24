@@ -1,27 +1,35 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
-import urlparse
-import sys
-
-from resources.lib.browser import Browser
-from resources.lib.line import Line
+from resources.lib.cache import Cache
+from resources.lib.smartdate import smartdate
 from resources.lib.common import log, notify
 
 #-------------------------------------------------------------------------------
 if __name__  == '__main__':
     addon = xbmcaddon.Addon()
-    executable_path = addon.getSetting('chrome')
-    if executable_path:
-        # 引数
-        args = urlparse.parse_qs(sys.argv[2][1:])
-        url = args.get('url', [''])
-        # ブラウザ
-        #browser = Browser(executable_path)
-        #browser.load(url[0] or 'https://www.yahoo.co.jp/')
-        # LINE
-        line = Line(executable_path)
-        line.start()
+    executable_path = addon.getSetting('executable_path')
+    extension_path = addon.getSetting('extension_path')
+    app_id = addon.getSetting('app_id')
+    email = addon.getSetting('email')
+    password = addon.getSetting('password')
+    talkroom = addon.getSetting('talkroom')
+    if executable_path and extension_path and app_id and email and password and talkroom:
+        # メッセージ読み込み
+        messages = Cache().read()
+        # メッセージ表示
+    	for m in messages:
+            # 日時
+            date = smartdate(m['year'],m['month'],m['day'],m['hour'],m['minute'])
+            # メッセージ
+            message = m['msg']
+            if m['src'] == '>':
+                message = '[COLOR yellow]%s[/COLOR]' % message
+            # メニュー
+            item = xbmcgui.ListItem('%s %s' % (date,message))
+    	    xbmcplugin.addDirectoryItem(int(sys.argv[1]), '', item, False)
+        xbmcplugin.endOfDirectory(int(sys.argv[1]), True)
     else:
-        ADDON.openSettings()
+        addon.openSettings()
