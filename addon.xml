@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="acript.line.wrapper"
+       name="LINE Wrapper"
+       version="1.0"
+       provider-name="kodiful">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+	  <provides>executable</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">LINE Wrapper</summary>
+    <summary lang="ja">LINE ラッパー</summary>
+    <description lang="en">Handle LINE app (Chrome app) via Selenium</description>
+    <description lang="ja">Seleniumを用いてLINEアプリ（Chromeアプリ）を操作します</description>
+    <disclaimer lang="en">Tested on macOS</disclaimer>
+    <disclaimer lang="ja">macOSでの動作を確認</disclaimer>
+    <website>http://kodiful.com/</website>
+  </extension>
+</addon>
