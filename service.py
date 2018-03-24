@@ -30,16 +30,15 @@ if __name__ == "__main__":
     password = addon.getSetting('password')
     talkroom = addon.getSetting('talkroom')
     if executable_path and extension_path and app_id and email and password and talkroom:
-        # ログイン
+        # LINEにログイン
         line = Line(executable_path, extension_path, app_id)
         line.open(email, password)
         line.select(talkroom)
-        # ページ監視
+        # 着信を監視
         hash = ''
         monitor = Monitor()
         while not monitor.abortRequested():
             if monitor.waitForAbort(5):
-                line.close()
                 break
             # 表示されているメッセージを取得
             messages = line.watch()
@@ -53,10 +52,12 @@ if __name__ == "__main__":
                 if hash and len(messages)>0:
                     m = messages[-1]
                     # 通知
-                    notify('%04d-%02d-%02d %02d:%02d %s' % (m['year'],m['month'],m['day'],m['hour'],m['minute'],m['msg']))
+                    notify(m['msg'])
                     # 画面切り替え
                     if xbmcaddon.Addon().getSetting('cec') == 'true':
                         xbmc.executebuiltin('CECActivateSource')
                         xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
                 # ハッシュを記録
                 hash = hash1
+        # LINEを終了
+        line.close()
