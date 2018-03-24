@@ -17,8 +17,8 @@
   <string id="32103">アプリID</string>
 
   <string id="32200">その他</string>
-  <string id="32201">デバッグ</string>
-  <string id="32202">着信時に画面切り替え</string>
+  <string id="32201">着信時に画面を切り替える</string>
+  <string id="32299">デバッグ</string>
 
   <string id="32901">01,02,03,04,05,06,07,08,09,10,11,12</string>
   <string id="32902">月,火,水,木,金,土,日</string>

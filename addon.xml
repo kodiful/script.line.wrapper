@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.line.wrapper"
-       name="LINE Wrapper"
+       name="LINE App Wrapper"
        version="1.0"
        provider-name="kodiful">
   <requires>
