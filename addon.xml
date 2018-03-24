@@ -12,10 +12,10 @@
   <extension point="xbmc.service" library="service.py"/>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary lang="en">LINE Wrapper</summary>
-    <summary lang="ja">LINE ラッパー</summary>
-    <description lang="en">Handle LINE app (Chrome app) via Selenium</description>
-    <description lang="ja">Seleniumを用いてLINEアプリ（Chromeアプリ）を操作します</description>
+    <summary lang="en">LINE App Wrapper</summary>
+    <summary lang="ja">LINEアプリラッパー</summary>
+    <description lang="en">Detect incoming to LINE app (Chrome app) via Selenium</description>
+    <description lang="ja">Seleniumを介してLINEアプリ（Chromeアプリ）への着信を検出します</description>
     <disclaimer lang="en">Tested on macOS</disclaimer>
     <disclaimer lang="ja">macOSでの動作を確認</disclaimer>
     <website>http://kodiful.com/</website>

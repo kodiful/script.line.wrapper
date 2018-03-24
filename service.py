@@ -32,23 +32,31 @@ if __name__ == "__main__":
     if executable_path and extension_path and app_id and email and password and talkroom:
         # ログイン
         line = Line(executable_path, extension_path, app_id)
-        line.login(email, password)
+        line.open(email, password)
         line.select(talkroom)
         # ページ監視
         hash = ''
         monitor = Monitor()
         while not monitor.abortRequested():
-            if monitor.waitForAbort(5): break
+            if monitor.waitForAbort(5):
+                line.close()
+                break
             # 表示されているメッセージを取得
             messages = line.watch()
             # 差分の有無をチェック
             hash1 = hashlib.md5(str(messages)).hexdigest()
             # 差分があれば通知
             if hash != hash1:
-                if hash and len(messages)>0:
-                    m = messages[-1]
-                    notify('%04d-%02d-%02d %02d:%02d %s' % (m['year'],m['month'],m['day'],m['hour'],m['minute'],m['msg']))
                 # メッセージ書き出し
                 Cache().write(messages)
+                # 通知＆画面切り替え
+                if hash and len(messages)>0:
+                    m = messages[-1]
+                    # 通知
+                    notify('%04d-%02d-%02d %02d:%02d %s' % (m['year'],m['month'],m['day'],m['hour'],m['minute'],m['msg']))
+                    # 画面切り替え
+                    if xbmcaddon.Addon().getSetting('cec') == 'true':
+                        xbmc.executebuiltin('CECActivateSource')
+                        xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
                 # ハッシュを記録
                 hash = hash1

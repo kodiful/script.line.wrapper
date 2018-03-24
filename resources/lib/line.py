@@ -21,7 +21,7 @@ class Line:
         self.driver = webdriver.Chrome(executable_path=executable_path, chrome_options=chrome_options)
         self.app_id = app_id
 
-    def login(self, email, password):
+    def open(self, email, password):
         # ページ読み込み
         self.driver.implicitly_wait(10)
         self.driver.get('chrome-extension://%s/index.html' % self.app_id)
@@ -37,6 +37,10 @@ class Line:
         # 本人確認コードを通知
         elem = self.driver.find_element_by_xpath("//div[@class='mdCMN01Code']")
         notify('Enter %s on mobile LINE' % elem.text)
+
+    def close(self):
+        # 終了
+        self.driver.close()
 
     def select(self, talkroom):
         # トークルーム

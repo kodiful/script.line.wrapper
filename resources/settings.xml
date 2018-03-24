@@ -16,6 +16,7 @@
     <setting label="32103" id="app_id" type="text" default=""/>
   </category>
   <category label="32200">
+    <setting label="32202" id="cec" type="bool" default="false"/>
     <setting label="32201" id="debug" type="bool" default="false"/>
   </category>
 </settings>

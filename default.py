@@ -20,7 +20,7 @@ if __name__  == '__main__':
         # メッセージ読み込み
         messages = Cache().read()
         # メッセージ表示
-    	for m in messages:
+    	for m in reversed(messages):
             # 日時
             date = smartdate(m['year'],m['month'],m['day'],m['hour'],m['minute'])
             # メッセージ
