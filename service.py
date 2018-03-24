@@ -38,8 +38,8 @@ if __name__ == "__main__":
         hash = ''
         monitor = Monitor()
         while not monitor.abortRequested():
-            if monitor.waitForAbort(5):
-                break
+            # 停止を待機
+            if monitor.waitForAbort(5): break
             # 表示されているメッセージを取得
             messages = line.watch()
             # 差分の有無をチェック

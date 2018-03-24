@@ -7,8 +7,7 @@ import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 from common import log, notify
 
 # import selenium
-ADDON = xbmcaddon.Addon()
-sys.path.append(os.path.join(xbmc.translatePath(ADDON.getAddonInfo('path')), 'resources', 'lib', 'selenium-3.9.0'))
+sys.path.append(os.path.join(xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('path')), 'resources', 'lib', 'selenium-3.9.0'))
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
