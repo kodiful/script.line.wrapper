@@ -39,7 +39,7 @@ class Line:
             elem.click()
             # 本人確認コードを通知
             elem = self.driver.find_element_by_xpath("//div[@class='mdCMN01Code']")
-            notify('Enter %s on mobile LINE in 1 minute' % elem.text)
+            notify('Enter %s to Mobile LINE' % elem.text)
             return 1
         except:
             notify('Login failed', error=True, time=3000)
