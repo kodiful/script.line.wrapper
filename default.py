@@ -24,9 +24,10 @@ if __name__  == '__main__':
             # 日時
             date = smartdate(m['year'],m['month'],m['day'],m['hour'],m['minute'])
             # メッセージ
-            message = m['msg']
-            if m['src'] == '>':
-                message = '[COLOR yellow]%s[/COLOR]' % message
+            if m['ttl']:
+                message = '[COLOR yellow]%s[/COLOR] %s' % (m['ttl'], m['msg'])
+            else:
+                message = '%s' % (m['msg'])
             # メニュー
             item = xbmcgui.ListItem('%s %s' % (date,message))
     	    xbmcplugin.addDirectoryItem(int(sys.argv[1]), '', item, False)

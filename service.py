@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
-import xbmc, xbmcaddon
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 from resources.lib.line import Line
 from resources.lib.cache import Cache
@@ -30,6 +30,8 @@ if __name__ == "__main__":
     password = addon.getSetting('password')
     talkroom = addon.getSetting('talkroom')
     if executable_path and extension_path and app_id and email and password and talkroom:
+        # キャッシュを設定
+        cache = Cache()
         # LINEにログイン
         line = Line(executable_path, extension_path, app_id)
         if line.open(email,password) and line.select(talkroom):
@@ -46,16 +48,19 @@ if __name__ == "__main__":
                 # 差分があれば通知
                 if hash != hash1:
                     # メッセージ書き出し
-                    Cache().write(messages)
+                    cache.write(messages)
                     # 通知＆画面切り替え
                     if hash and len(messages)>0:
                         m = messages[-1]
                         # 通知
-                        notify(m['msg'])
+                        notify('%s > %s' %(m['ttl'],m['msg']))
                         # 画面切り替え
                         if xbmcaddon.Addon().getSetting('cec') == 'true':
                             xbmc.executebuiltin('CECActivateSource')
-                            xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
+                            if xbmc.getInfoLabel('Container.FolderPath'):
+                                xbmc.executebuiltin('Container.Update(plugin://%s)' % addon.getAddonInfo('id'))
+                            else:
+                                xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
                     # ハッシュを記録
                     hash = hash1
         # LINEを終了

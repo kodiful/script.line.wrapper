@@ -5,6 +5,7 @@ import datetime, re, hashlib
 import socket
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
+from cache import Cache
 from common import log, notify
 
 # import selenium
@@ -84,21 +85,24 @@ class Line:
                 elem3 = elem1.find_element_by_xpath("../../../..")
                 cls = elem3.get_attribute('class')
                 if cls == 'MdRGT07Cont mdRGT07Own':
-                    src = '<'
+                    ttl = u'自分'
+                    img = u''
                 elif cls == 'MdRGT07Cont mdRGT07Other':
-                    src = '>'
+                    ttl = elem3.find_element_by_xpath("./div[@class='mdRGT07Body']/div[@class='mdRGT07Ttl']").text
+                    img = elem3.find_element_by_xpath("./div[@class='mdRGT07Img']/img").get_attribute('src')
                 else:
-                    src = ''
-                # 格納
+                    ttl = u''
+                    img = u''
+                # リストに格納
                 message = {
                     'year': d.year,
                     'month': d.month,
                     'day': d.day,
                     'hour': hour,
                     'minute': minute,
-                    'src': src,
+                    'img': img.encode('utf-8'),
+                    'ttl': ttl.encode('utf-8'),
                     'msg': msg.encode('utf-8')
                 }
                 messages.append(message)
-                #log('%04d-%02d-%02d %02d:%02d %s %s' % (d.year,d.month,d.day,hour,minute,src,msg))
         return messages
