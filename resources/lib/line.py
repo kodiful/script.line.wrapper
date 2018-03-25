@@ -2,6 +2,7 @@
 
 import sys, os
 import datetime, re, hashlib
+import socket
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 from common import log, notify
@@ -19,37 +20,50 @@ class Line:
         chrome_options.add_extension(extension_path)
         self.driver = webdriver.Chrome(executable_path=executable_path, chrome_options=chrome_options)
         self.app_id = app_id
+        # HTTP接続におけるタイムアウト(秒)
+        socket.setdefaulttimeout(60)
 
     def open(self, email, password):
-        # ページ読み込み
-        self.driver.implicitly_wait(10)
-        self.driver.get('chrome-extension://%s/index.html' % self.app_id)
-        # メールアドレス
-        elem = self.driver.find_element_by_id('line_login_email')
-        elem.send_keys(email)
-        # パスワード
-        elem = self.driver.find_element_by_id('line_login_pwd')
-        elem.send_keys(password)
-        # ログイン
-        elem = self.driver.find_element_by_id('login_btn')
-        elem.click()
-        # 本人確認コードを通知
-        elem = self.driver.find_element_by_xpath("//div[@class='mdCMN01Code']")
-        notify('Enter %s on mobile LINE' % elem.text)
+        try:
+            # ページ読み込み
+            self.driver.implicitly_wait(10)
+            self.driver.get('chrome-extension://%s/index.html' % self.app_id)
+            # メールアドレス
+            elem = self.driver.find_element_by_id('line_login_email')
+            elem.send_keys(email)
+            # パスワード
+            elem = self.driver.find_element_by_id('line_login_pwd')
+            elem.send_keys(password)
+            # ログイン
+            elem = self.driver.find_element_by_id('login_btn')
+            elem.click()
+            # 本人確認コードを通知
+            elem = self.driver.find_element_by_xpath("//div[@class='mdCMN01Code']")
+            notify('Enter %s on mobile LINE in 1 minute' % elem.text)
+            return 1
+        except:
+            notify('Login failed', error=True, time=3000)
+            return 0
+
+    def select(self, talkroom):
+        try:
+            # トークルーム
+            self.driver.implicitly_wait(60)
+            elem = self.driver.find_element_by_xpath("//li[@title='%s']" % talkroom)
+            elem.click()
+            return 1
+        except:
+            notify('Login failed', error=True, time=3000)
+            return 0
 
     def close(self):
         # 終了
         self.driver.close()
 
-    def select(self, talkroom):
-        # トークルーム
-        self.driver.implicitly_wait(60)
-        elem = self.driver.find_element_by_xpath("//li[@title='%s']" % talkroom)
-        elem.click()
-
     def watch(self):
         # メッセージ
         messages = []
+        self.driver.implicitly_wait(10)
         elems = self.driver.find_elements_by_xpath("//div[@class='mdRGT07Msg mdRGT07Text' or @class='MdRGT10Notice mdRGT07Other mdRGT10Date']")
         for elem in elems:
             date = elem.get_attribute('data-local-id')
