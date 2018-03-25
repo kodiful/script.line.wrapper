@@ -54,7 +54,7 @@ class Line:
             elem.click()
             return 1
         except:
-            notify('Login failed', error=True, time=3000)
+            notify('Selection failed', error=True, time=3000)
             return 0
 
     def close(self):

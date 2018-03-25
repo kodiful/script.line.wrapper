@@ -9,11 +9,17 @@ from resources.lib.common import log, notify
 
 class Monitor(xbmc.Monitor):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, line):
+        self.line = line
         xbmc.Monitor.__init__(self)
 
     def onSettingsChanged(self):
-        log('settings changed')
+        talkroom = xbmcaddon.Addon().getSetting('talkroom')
+        if self.line.select(talkroom):
+            if xbmc.getInfoLabel('Container.FolderPath'):
+                xbmc.executebuiltin('Container.Update(plugin://%s)' % addon.getAddonInfo('id'))
+            else:
+                xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
 
     def onScreensaverActivated(self):
         log('screensaver activated')
@@ -37,7 +43,7 @@ if __name__ == "__main__":
         if line.open(email,password) and line.select(talkroom):
             # 着信を監視
             hash = ''
-            monitor = Monitor()
+            monitor = Monitor(line)
             while not monitor.abortRequested():
                 # 停止を待機
                 if monitor.waitForAbort(5): break
@@ -53,7 +59,10 @@ if __name__ == "__main__":
                     if hash and len(messages)>0:
                         m = messages[-1]
                         # 通知
-                        notify('%s > %s' %(m['ttl'],m['msg']))
+                        if m['ttl']:
+                            notify('%s > %s' %(m['ttl'],m['msg']))
+                        else:
+                            notify(m['msg'])
                         # 画面切り替え
                         if xbmcaddon.Addon().getSetting('cec') == 'true':
                             xbmc.executebuiltin('CECActivateSource')
