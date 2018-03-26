@@ -5,7 +5,7 @@ import datetime, re, hashlib
 import socket
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
-from cache import Cache
+from settings import Settings
 from common import log, notify
 
 # import selenium
@@ -40,22 +40,32 @@ class Line:
             elem.click()
             # 本人確認コードを通知
             elem = self.driver.find_element_by_xpath("//div[@class='mdCMN01Code']")
-            notify('Enter %s to Mobile LINE' % elem.text)
+            notify('Enter %s to Mobile LINE' % elem.text, time=20000)
+            # トーク
+            self.driver.implicitly_wait(60)
+            elem = self.driver.find_element_by_id('_chat_list_body')
+            # トーク一覧を作成
+            chatlist = []
+            elems = elem.find_elements_by_xpath("./li")
+            for elem in elems:
+                title = elem.get_attribute('title')
+                chatlist.append(title.encode('utf-8'))
+            # 設定ファイルを更新
+            Settings().update(chatlist)
             return 1
         except:
             notify('Login failed', error=True, time=3000)
             return 0
 
-    def select(self, talkroom):
+    def select(self, talk):
         try:
-            # トークルーム
-            self.driver.implicitly_wait(60)
-            elem = self.driver.find_element_by_xpath("//li[@title='%s']" % talkroom)
-            elem.click()
-            return 1
+            # 指定したトークを選択
+            self.driver.implicitly_wait(10)
+            elem = self.driver.find_element_by_id('_chat_list_body')
+            elem2 = elem.find_element_by_xpath("./li[@title='%s']" % talk.decode('utf-8'))
+            elem2.click()
         except:
-            notify('Selection failed', error=True, time=3000)
-            return 0
+            pass
 
     def close(self):
         # 終了
@@ -100,7 +110,7 @@ class Line:
                     'day': d.day,
                     'hour': hour,
                     'minute': minute,
-                    'img': img.encode('utf-8'),
+                    #'img': img.encode('utf-8'),
                     'ttl': ttl.encode('utf-8'),
                     'msg': msg.encode('utf-8')
                 }

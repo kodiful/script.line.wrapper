@@ -15,10 +15,10 @@ if __name__  == '__main__':
     app_id = addon.getSetting('app_id')
     email = addon.getSetting('email')
     password = addon.getSetting('password')
-    talkroom = addon.getSetting('talkroom')
-    if executable_path and extension_path and app_id and email and password and talkroom:
+    talk = addon.getSetting('talk')
+    if executable_path and extension_path and app_id and email and password and talk:
         # メッセージ読み込み
-        messages = Cache().read()
+        messages = Cache().read_json()
         # メッセージ表示
     	for m in reversed(messages):
             # 日時

@@ -5,6 +5,8 @@ import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 from resources.lib.line import Line
 from resources.lib.cache import Cache
+from resources.lib.secret import Secret
+from resources.lib.settings import Settings
 from resources.lib.common import log, notify
 
 class Monitor(xbmc.Monitor):
@@ -14,12 +16,11 @@ class Monitor(xbmc.Monitor):
         xbmc.Monitor.__init__(self)
 
     def onSettingsChanged(self):
-        talkroom = xbmcaddon.Addon().getSetting('talkroom')
-        if self.line.select(talkroom):
-            if xbmc.getInfoLabel('Container.FolderPath'):
-                xbmc.executebuiltin('Container.Update(plugin://%s)' % addon.getAddonInfo('id'))
-            else:
-                xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
+        talk = xbmcaddon.Addon().getSetting('talk')
+        self.line.select(talk)
+        folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
+        if xbmc.getInfoLabel('Container.FolderPath') == folderpath:
+            xbmc.executebuiltin('Container.Update(%s)' % folderpath)
 
     def onScreensaverActivated(self):
         log('screensaver activated')
@@ -27,50 +28,60 @@ class Monitor(xbmc.Monitor):
     def onScreensaverDeactivated(self):
         log('screensaver deactivated')
 
-if __name__ == "__main__":
+def service():
+    # アドオン
     addon = xbmcaddon.Addon()
+    # 設定ファイルを初期化
+    settings = Settings()
+    # キーを初期化
+    secret = Secret()
+    # 設定
     executable_path = addon.getSetting('executable_path')
     extension_path = addon.getSetting('extension_path')
     app_id = addon.getSetting('app_id')
     email = addon.getSetting('email')
     password = addon.getSetting('password')
-    talkroom = addon.getSetting('talkroom')
-    if executable_path and extension_path and app_id and email and password and talkroom:
-        # キャッシュを設定
-        cache = Cache()
+    talk = addon.getSetting('talk')
+    if executable_path and extension_path and app_id and email and password:
         # LINEにログイン
         line = Line(executable_path, extension_path, app_id)
-        if line.open(email,password) and line.select(talkroom):
+        if line.open(email, password):
+            line.select(talk)
             # 着信を監視
             hash = ''
             monitor = Monitor(line)
             while not monitor.abortRequested():
                 # 停止を待機
                 if monitor.waitForAbort(5): break
+                # キーをチェック
+                if secret.check() == False: break
                 # 表示されているメッセージを取得
                 messages = line.watch()
                 # 差分の有無をチェック
+                talk1 = xbmcaddon.Addon().getSetting('talk')
                 hash1 = hashlib.md5(str(messages)).hexdigest()
                 # 差分があれば通知
-                if hash != hash1:
-                    # メッセージ書き出し
-                    cache.write(messages)
-                    # 通知＆画面切り替え
-                    if hash and len(messages)>0:
-                        m = messages[-1]
-                        # 通知
-                        if m['ttl']:
-                            notify('%s > %s' %(m['ttl'],m['msg']))
-                        else:
-                            notify(m['msg'])
-                        # 画面切り替え
-                        if xbmcaddon.Addon().getSetting('cec') == 'true':
-                            xbmc.executebuiltin('CECActivateSource')
-                            if xbmc.getInfoLabel('Container.FolderPath'):
-                                xbmc.executebuiltin('Container.Update(plugin://%s)' % addon.getAddonInfo('id'))
-                            else:
-                                xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
-                    # ハッシュを記録
-                    hash = hash1
+                if hash != hash1 and Cache().write_json(messages):
+                    # 画面切り替え
+                    cec = xbmcaddon.Addon().getSetting('cec')
+                    if cec == 'true':
+                        xbmc.executebuiltin('CECActivateSource')
+                    folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
+                    if xbmc.getInfoLabel('Container.FolderPath') == folderpath:
+                        xbmc.executebuiltin('Container.Update(%s)' % folderpath)
+                    elif cec == 'true':
+                        xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
+                    # 通知
+                    m = messages[-1]
+                    if m['ttl']:
+                        notify('%s > %s' %(m['ttl'],m['msg']))
+                    else:
+                        notify(m['msg'])
+                # ハッシュを記録
+                hash = hash1
         # LINEを終了
         line.close()
+        # キーをクリア
+        secret.clear()
+
+if __name__ == "__main__": service()

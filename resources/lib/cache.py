@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os, json
+import hashlib
 import xbmc, xbmcaddon
 
 from common import log, notify
@@ -14,7 +15,8 @@ class Cache:
         if not os.path.isdir(self.dirpath):
             os.makedirs(self.dirpath)
         # ファイルパスを設定
-        self.filepath = os.path.join(self.dirpath, 'messages.json')
+        talk = addon.getSetting('talk')
+        self.filepath = os.path.join(self.dirpath, '%s.json' % hashlib.md5(talk).hexdigest())
 
     def clear(self):
         # キャッシュディレクトリをクリア
@@ -24,10 +26,23 @@ class Cache:
 
     def read(self):
         if os.path.isfile(self.filepath):
+            f = open(self.filepath, 'r')
+            data = f.read()
+            f.close()
+        else:
+            data = ''
+        return data
+
+    def write(self, data):
+        f = open(self.filepath, 'w')
+        f.write(data)
+        f.close()
+
+    def read_json(self):
+        cur_data = self.read()
+        if cur_data:
             try:
-                f = open(self.filepath,'r')
-                data = json.loads(f.read(), 'utf-8')
-                f.close()
+                data = json.loads(cur_data, 'utf-8')
             except ValueError:
                 log('broken json: %s' % self.filepath)
                 data = []
@@ -35,7 +50,13 @@ class Cache:
             data = []
         return data
 
-    def write(self, data):
-        f = open(self.filepath,'w')
-        f.write(json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2))
-        f.close()
+    def write_json(self, data):
+        # 既存データ
+        cur_data = self.read()
+        # 書き込みデータ
+        new_data = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
+        if new_data != cur_data:
+            self.write(new_data)
+            return True
+        else:
+            return False
