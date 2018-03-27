@@ -28,8 +28,12 @@ if __name__  == '__main__':
                 message = '[COLOR yellow]%s[/COLOR] %s' % (m['ttl'], m['msg'])
             else:
                 message = '%s' % (m['msg'])
+            # コンテクストメニュー
+            menu = []
+            menu.append((addon.getLocalizedString(32801), 'Addon.OpenSettings(%s)' % addon.getAddonInfo('id')))
             # メニュー
             item = xbmcgui.ListItem('%s %s' % (date,message))
+            item.addContextMenuItems(menu, replaceItems=True)
     	    xbmcplugin.addDirectoryItem(int(sys.argv[1]), '', item, False)
         xbmcplugin.endOfDirectory(int(sys.argv[1]), True)
     else:

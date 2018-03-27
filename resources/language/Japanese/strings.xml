@@ -20,6 +20,8 @@
   <string id="32201">着信時に画面を切り替える</string>
   <string id="32299">デバッグ</string>
 
+  <string id="32801">アドオン設定</string>
+
   <string id="32901">01,02,03,04,05,06,07,08,09,10,11,12</string>
   <string id="32902">月,火,水,木,金,土,日</string>
   <string id="32903">{month}月{day}日({day7}) {hour}時{minute}分</string>

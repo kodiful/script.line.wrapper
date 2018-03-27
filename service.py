@@ -16,7 +16,8 @@ class Monitor(xbmc.Monitor):
         xbmc.Monitor.__init__(self)
 
     def onSettingsChanged(self):
-        talk = xbmcaddon.Addon().getSetting('talk')
+        addon = xbmcaddon.Addon()
+        talk = addon.getSetting('talk')
         self.line.select(talk)
         folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
         if xbmc.getInfoLabel('Container.FolderPath') == folderpath:
@@ -34,7 +35,7 @@ def service():
     # 設定ファイルを初期化
     settings = Settings()
     # キーを初期化
-    secret = Secret()
+    secret = Secret(renew=True)
     # 設定
     executable_path = addon.getSetting('executable_path')
     extension_path = addon.getSetting('extension_path')
@@ -81,7 +82,7 @@ def service():
                 hash = hash1
         # LINEを終了
         line.close()
-        # キーをクリア
-        secret.clear()
+    # キーをクリア
+    secret.clear()
 
 if __name__ == "__main__": service()
