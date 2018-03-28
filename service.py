@@ -20,7 +20,7 @@ class Monitor(xbmc.Monitor):
         talk = addon.getSetting('talk')
         self.line.select(talk)
         folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
-        if xbmc.getInfoLabel('Container.FolderPath') == folderpath:
+        if xbmc.getInfoLabel('Container.FolderPath').find(folderpath) == 0:
             xbmc.executebuiltin('Container.Update(%s)' % folderpath)
 
     def onScreensaverActivated(self):
@@ -83,6 +83,9 @@ def service():
                             notify(m['msg'])
                     # ハッシュを記録
                     hash = hash1
+                else:
+                    # メッセージが取得できない
+                    break
         # LINEを終了
         line.close()
         # キーをクリア
