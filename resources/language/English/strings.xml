@@ -10,6 +10,7 @@
   <string id="32001">Mail address</string>
   <string id="32002">Password</string>
   <string id="32003">Talk</string>
+  <string id="32004">[COLOR green]Relogin[/COLOR]</string>
 
   <string id="32100">System Settings</string>
   <string id="32101">Path to chromedriver</string>

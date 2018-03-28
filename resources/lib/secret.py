@@ -8,15 +8,17 @@ from common import log, notify
 
 class Secret:
 
-    def __init__(self, renew=False, filename='secret.txt'):
+    def __init__(self, filename='secret.txt'):
         # キャッシュディレクトリを作成
         addon = xbmcaddon.Addon()
         self.dirpath = xbmc.translatePath(addon.getAddonInfo('profile'))
         if not os.path.isdir(self.dirpath):
             os.makedirs(self.dirpath)
         self.filepath = os.path.join(self.dirpath, filename)
-        if renew:
-            self.update()
+        self.data = datetime.datetime.now().strftime('%s')
+        f = open(self.filepath, 'w')
+        f.write(self.data)
+        f.close()
 
     def read(self):
         if os.path.isfile(self.filepath):
@@ -25,18 +27,14 @@ class Secret:
             f.close()
         else:
             data = ''
-            return data
-
-    def update(self):
-        self.data = datetime.datetime.now().strftime('%s')
-        f = open(self.filepath, 'w')
-        f.write(self.data)
-        f.close()
+        return data
 
     def check(self):
         data = self.read()
+        log(data)
+        log(self.data)
         return data and data == self.data
 
     def clear(self):
-        if self.read():
+        if self.check():
             os.remove(self.filepath)

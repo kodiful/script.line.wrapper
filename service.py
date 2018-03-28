@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
+import threading
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 from resources.lib.line import Line
@@ -35,7 +36,7 @@ def service():
     # 設定ファイルを初期化
     settings = Settings()
     # キーを初期化
-    secret = Secret(renew=True)
+    secret = Secret()
     # 設定
     executable_path = addon.getSetting('executable_path')
     extension_path = addon.getSetting('extension_path')
@@ -55,7 +56,7 @@ def service():
                 # 停止を待機
                 if monitor.waitForAbort(5): break
                 # キーをチェック
-                if secret.check() == False: break
+                if not secret.check(): break
                 # 表示されているメッセージを取得
                 messages = line.watch()
                 # 差分の有無をチェック
@@ -80,9 +81,14 @@ def service():
                         notify(m['msg'])
                 # ハッシュを記録
                 hash = hash1
+            else:
+                # LINEを終了
+                line.close()
+                # 終了
+                return
         # LINEを終了
         line.close()
-    # キーをクリア
-    secret.clear()
+    # 再起動
+    threading.Thread(target=service).start()
 
 if __name__ == "__main__": service()
