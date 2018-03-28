@@ -21,7 +21,7 @@ class Monitor(xbmc.Monitor):
         self.line.select(talk)
         folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
         if xbmc.getInfoLabel('Container.FolderPath').find(folderpath) == 0:
-            xbmc.executebuiltin('Container.Update(%s)' % folderpath)
+            xbmc.executebuiltin('Container.Update(%s,replace)' % folderpath)
 
     def onScreensaverActivated(self):
         log('screensaver activated')
@@ -71,8 +71,8 @@ def service():
                         if cec == 'true':
                             xbmc.executebuiltin('CECActivateSource')
                         folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
-                        if xbmc.getInfoLabel('Container.FolderPath') == folderpath:
-                            xbmc.executebuiltin('Container.Update(%s)' % folderpath)
+                        if xbmc.getInfoLabel('Container.FolderPath').find(folderpath) == 0:
+                            xbmc.executebuiltin('Container.Update(%s,replace)' % folderpath)
                         elif cec == 'true':
                             xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
                         # 通知
