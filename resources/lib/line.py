@@ -65,54 +65,58 @@ class Line:
             elem2 = elem.find_element_by_xpath("./li[@title='%s']" % talk.decode('utf-8'))
             elem2.click()
         except:
-            pass
+            notify('Selection failed', error=True, time=3000)
 
     def close(self):
         # 終了
         self.driver.close()
 
     def watch(self):
-        # メッセージ
-        messages = []
-        self.driver.implicitly_wait(10)
-        elems = self.driver.find_elements_by_xpath("//div[@class='mdRGT07Msg mdRGT07Text' or @class='MdRGT10Notice mdRGT07Other mdRGT10Date']")
-        for elem in elems:
-            date = elem.get_attribute('data-local-id')
-            if date:
-                # 日付
-                d = datetime.datetime.fromtimestamp(int(date)/1000)
-            else:
-                # メッセージ
-                elem1 = elem.find_element_by_xpath(".//span[@class='mdRGT07MsgTextInner']")
-                msg = elem1.text.replace('\n', ' ')
-                # 時刻
-                elem2 = elem.find_element_by_xpath(".//p[@class='mdRGT07Date']")
-                match = re.match(r'(AM|PM) (1?[0-9])\:([0-9][0-9])', elem2.text)
-                hour = int(match.group(2))
-                minute = int(match.group(3))
-                if match.group(1) == 'PM': hour += 12
-                # 親エレメント
-                elem3 = elem1.find_element_by_xpath("../../../..")
-                cls = elem3.get_attribute('class')
-                if cls == 'MdRGT07Cont mdRGT07Own':
-                    ttl = u'自分'
-                    img = u''
-                elif cls == 'MdRGT07Cont mdRGT07Other':
-                    ttl = elem3.find_element_by_xpath("./div[@class='mdRGT07Body']/div[@class='mdRGT07Ttl']").text
-                    img = elem3.find_element_by_xpath("./div[@class='mdRGT07Img']/img").get_attribute('src')
+        try:
+            # メッセージ
+            messages = []
+            self.driver.implicitly_wait(10)
+            elems = self.driver.find_elements_by_xpath("//div[@class='mdRGT07Msg mdRGT07Text' or @class='MdRGT10Notice mdRGT07Other mdRGT10Date']")
+            for elem in elems:
+                date = elem.get_attribute('data-local-id')
+                if date:
+                    # 日付
+                    d = datetime.datetime.fromtimestamp(int(date)/1000)
                 else:
-                    ttl = u''
-                    img = u''
-                # リストに格納
-                message = {
-                    'year': d.year,
-                    'month': d.month,
-                    'day': d.day,
-                    'hour': hour,
-                    'minute': minute,
-                    #'img': img.encode('utf-8'),
-                    'ttl': ttl.encode('utf-8'),
-                    'msg': msg.encode('utf-8')
-                }
-                messages.append(message)
-        return messages
+                    # メッセージ
+                    elem1 = elem.find_element_by_xpath(".//span[@class='mdRGT07MsgTextInner']")
+                    msg = elem1.text.replace('\n', ' ')
+                    # 時刻
+                    elem2 = elem.find_element_by_xpath(".//p[@class='mdRGT07Date']")
+                    match = re.match(r'(AM|PM) (1?[0-9])\:([0-9][0-9])', elem2.text)
+                    hour = int(match.group(2))
+                    minute = int(match.group(3))
+                    if match.group(1) == 'PM': hour += 12
+                    # 親エレメント
+                    elem3 = elem1.find_element_by_xpath("../../../..")
+                    cls = elem3.get_attribute('class')
+                    if cls == 'MdRGT07Cont mdRGT07Own':
+                        ttl = u'自分'
+                        img = u''
+                    elif cls == 'MdRGT07Cont mdRGT07Other':
+                        ttl = elem3.find_element_by_xpath("./div[@class='mdRGT07Body']/div[@class='mdRGT07Ttl']").text
+                        img = elem3.find_element_by_xpath("./div[@class='mdRGT07Img']/img").get_attribute('src')
+                    else:
+                        ttl = u''
+                        img = u''
+                    # リストに格納
+                    message = {
+                        'year': d.year,
+                        'month': d.month,
+                        'day': d.day,
+                        'hour': hour,
+                        'minute': minute,
+                        #'img': img.encode('utf-8'),
+                        'ttl': ttl.encode('utf-8'),
+                        'msg': msg.encode('utf-8')
+                    }
+                    messages.append(message)
+            return messages
+        except:
+            notify('Extraction failed', error=True, time=3000)
+            return None
