@@ -65,7 +65,7 @@ def service():
                     talk1 = xbmcaddon.Addon().getSetting('talk')
                     hash1 = hashlib.md5(str(messages)).hexdigest()
                     # 差分があれば通知
-                    if hash != hash1 and Cache().write_json(messages):
+                    if hash != hash1 and Cache('json').write_json(messages):
                         # 画面切り替え
                         cec = xbmcaddon.Addon().getSetting('cec')
                         if cec == 'true':

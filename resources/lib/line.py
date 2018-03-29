@@ -5,6 +5,7 @@ import datetime, re, hashlib
 import socket
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
+from cache import Cache
 from settings import Settings
 from common import log, notify
 
@@ -23,6 +24,8 @@ class Line:
         self.app_id = app_id
         # HTTP接続におけるタイムアウト(秒)
         socket.setdefaulttimeout(60)
+        # キャッシュ
+        self.cache = Cache('image')
 
     def open(self, email, password):
         try:
@@ -53,8 +56,9 @@ class Line:
             # 設定ファイルを更新
             Settings().update(chatlist)
             return 1
-        except:
+        except Exception as e:
             notify('Login failed', error=True, time=3000)
+            log(e)
             return 0
 
     def select(self, talk):
@@ -64,8 +68,9 @@ class Line:
             elem = self.driver.find_element_by_id('_chat_list_body')
             elem2 = elem.find_element_by_xpath("./li[@title='%s']" % talk.decode('utf-8'))
             elem2.click()
-        except:
+        except Exception as e:
             notify('Selection failed', error=True, time=3000)
+            log(e)
 
     def close(self):
         # 終了
@@ -85,7 +90,7 @@ class Line:
                 else:
                     # メッセージ
                     elem1 = elem.find_element_by_xpath(".//span[@class='mdRGT07MsgTextInner']")
-                    msg = elem1.text.replace('\n', ' ')
+                    msg = elem1.text.replace('\n', ' ').encode('utf-8')
                     # 時刻
                     elem2 = elem.find_element_by_xpath(".//p[@class='mdRGT07Date']")
                     match = re.match(r'(AM|PM) (1?[0-9])\:([0-9][0-9])', elem2.text)
@@ -96,14 +101,18 @@ class Line:
                     elem3 = elem1.find_element_by_xpath("../../../..")
                     cls = elem3.get_attribute('class')
                     if cls == 'MdRGT07Cont mdRGT07Own':
-                        ttl = u'自分'
-                        img = u''
+                        ttl = '自分'
+                        filepath = ''
                     elif cls == 'MdRGT07Cont mdRGT07Other':
-                        ttl = elem3.find_element_by_xpath("./div[@class='mdRGT07Body']/div[@class='mdRGT07Ttl']").text
-                        img = elem3.find_element_by_xpath("./div[@class='mdRGT07Img']/img").get_attribute('src')
+                        ttl = elem3.find_element_by_xpath("./div[@class='mdRGT07Body']/div[@class='mdRGT07Ttl']").get_attribute('textContent').encode('utf-8')
+                        img = elem3.find_element_by_xpath("./div[@class='mdRGT07Img']/img").get_attribute('src').encode('utf-8')
+                        filepath = self.cache.filepath('%s' % hashlib.md5(ttl).hexdigest())
+                        log(ttl)
+                        log(filepath)
+                        self.savebinary(img, filepath)
                     else:
-                        ttl = u''
-                        img = u''
+                        ttl = ''
+                        filepath = ''
                     # リストに格納
                     message = {
                         'year': d.year,
@@ -111,12 +120,39 @@ class Line:
                         'day': d.day,
                         'hour': hour,
                         'minute': minute,
-                        #'img': img.encode('utf-8'),
-                        'ttl': ttl.encode('utf-8'),
-                        'msg': msg.encode('utf-8')
+                        'img': filepath,
+                        'ttl': ttl,
+                        'msg': msg
                     }
                     messages.append(message)
             return messages
-        except:
+        except Exception as e:
             notify('Extraction failed', error=True, time=3000)
+            log(e)
             return None
+
+    def savebinary(self, url, filepath):
+        # スクリプト
+        script = """
+        var get_resource = function(url) {
+            var req = new XMLHttpRequest();
+            req.open('GET', url, false);
+            req.overrideMimeType('text/plain; charset=x-user-defined');
+            req.send(null);
+            var bytes = [];
+            if(req.status == 200) {
+                var data = req.responseText;
+                for (var i = 0; i < data.length; i++){
+                    bytes[i] = data.charCodeAt(i) & 0xff;
+                }
+            }
+            return bytes;
+        }
+        """
+        script += "return get_resource('{url}');".format(url=url)
+        # スクリプト実行
+        bytes = self.driver.execute_script(script)
+        # ファイルへ保存
+        f = open(filepath, 'wb')
+        f.write(bytearray(bytes))
+        f.close()

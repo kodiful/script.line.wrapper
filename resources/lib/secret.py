@@ -34,8 +34,6 @@ class Secret:
 
     def check(self):
         data = self.value()
-        log(data)
-        log(self.data)
         return data and data == self.data
 
     def clear(self):

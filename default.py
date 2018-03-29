@@ -26,7 +26,7 @@ if __name__  == '__main__':
     # 必要なアドオン設定が揃っていたらメインの処理を実行
     if executable_path and extension_path and app_id and email and password and talk:
         # メッセージ読み込み
-        messages = Cache().read_json()
+        messages = Cache('json').read_json()
         # メッセージ表示
         for m in reversed(messages):
             # 日時
@@ -40,7 +40,7 @@ if __name__  == '__main__':
             menu = []
             menu.append((addon.getLocalizedString(32801), 'Addon.OpenSettings(%s)' % addon.getAddonInfo('id')))
             # メニュー
-            item = xbmcgui.ListItem('%s %s' % (date,message))
+            item = xbmcgui.ListItem('%s %s' % (date,message), iconImage=m['img'], thumbnailImage=m['img'])
             item.addContextMenuItems(menu, replaceItems=True)
             xbmcplugin.addDirectoryItem(int(sys.argv[1]), '', item, False)
         xbmcplugin.endOfDirectory(int(sys.argv[1]), True)
