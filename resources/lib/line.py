@@ -3,6 +3,7 @@
 import sys, os
 import datetime, re, hashlib
 import socket
+import traceback
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 from cache import Cache
@@ -13,6 +14,7 @@ from common import log, notify
 sys.path.append(os.path.join(xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('path')), 'resources', 'lib', 'selenium-3.9.0'))
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
 
 class Line:
 
@@ -57,8 +59,8 @@ class Line:
             Settings().update(chatlist)
             return 1
         except Exception as e:
+            log(traceback.format_exc())
             notify('Login failed', error=True, time=3000)
-            log(e)
             return 0
 
     def select(self, talk):
@@ -69,8 +71,8 @@ class Line:
             elem2 = elem.find_element_by_xpath("./li[@title='%s']" % talk.decode('utf-8'))
             elem2.click()
         except Exception as e:
+            log(traceback.format_exc())
             notify('Selection failed', error=True, time=3000)
-            log(e)
 
     def close(self):
         # 終了
@@ -106,9 +108,7 @@ class Line:
                     elif cls == 'MdRGT07Cont mdRGT07Other':
                         ttl = elem3.find_element_by_xpath("./div[@class='mdRGT07Body']/div[@class='mdRGT07Ttl']").get_attribute('textContent').encode('utf-8')
                         img = elem3.find_element_by_xpath("./div[@class='mdRGT07Img']/img").get_attribute('src').encode('utf-8')
-                        filepath = self.cache.filepath('%s' % hashlib.md5(ttl).hexdigest())
-                        log(ttl)
-                        log(filepath)
+                        filepath = self.cache.path(hashlib.md5(ttl).hexdigest())
                         self.savebinary(img, filepath)
                     else:
                         ttl = ''
@@ -127,8 +127,8 @@ class Line:
                     messages.append(message)
             return messages
         except Exception as e:
+            log(traceback.format_exc())
             notify('Extraction failed', error=True, time=3000)
-            log(e)
             return None
 
     def savebinary(self, url, filepath):
@@ -156,3 +156,15 @@ class Line:
         f = open(filepath, 'wb')
         f.write(bytearray(bytes))
         f.close()
+
+    def submit(self, message):
+        try:
+            # メッセージを送信
+            self.driver.implicitly_wait(10)
+            elem = self.driver.find_element_by_id('_chat_room_input')
+            elem.click()
+            elem.send_keys(message)
+            elem.send_keys(Keys.ENTER)
+        except:
+            log(traceback.format_exc())
+            notify('Submission failed', error=True, time=3000)

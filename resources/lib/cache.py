@@ -8,18 +8,28 @@ from common import log, notify
 
 class Cache:
 
-    def __init__(self, dirname):
+    def __init__(self, dirname, filename=None):
         # キャッシュディレクトリを作成
         addon = xbmcaddon.Addon()
         self.dirpath = os.path.join(xbmc.translatePath(addon.getAddonInfo('profile')), 'cache', dirname)
         if not os.path.isdir(self.dirpath):
             os.makedirs(self.dirpath)
         # ファイルパスを設定
-        talk = addon.getSetting('talk')
-        self.jsonpath = self.filepath('%s.json' % hashlib.md5(talk).hexdigest())
+        if filename:
+            self.filepath = self.path(filename)
+        else:
+            talk = addon.getSetting('talk')
+            self.filepath = self.path('%s.json' % hashlib.md5(talk).hexdigest())
 
-    def filepath(self, filename):
+    def path(self, filename):
         return os.path.join(self.dirpath, filename)
+
+    def date(self):
+        if os.path.isfile(self.filepath):
+            date = os.stat(self.filepath).st_mtime
+        else:
+            date = 0
+        return date
 
     def clear(self):
         # キャッシュディレクトリをクリア
@@ -28,8 +38,8 @@ class Cache:
             os.remove(os.path.join(self.dirpath, file_path))
 
     def read(self):
-        if os.path.isfile(self.jsonpath):
-            f = open(self.jsonpath, 'r')
+        if os.path.isfile(self.filepath):
+            f = open(self.filepath, 'r')
             data = f.read()
             f.close()
         else:
@@ -37,7 +47,7 @@ class Cache:
         return data
 
     def write(self, data):
-        f = open(self.jsonpath, 'w')
+        f = open(self.filepath, 'w')
         f.write(data)
         f.close()
 

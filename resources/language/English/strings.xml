@@ -12,6 +12,10 @@
   <string id="32003">Talk</string>
   <string id="32004">[COLOR green]Relogin[/COLOR]</string>
 
+  <string id="32300">Submit Message</string>
+  <string id="32302">Message</string>
+  <string id="32303">[COLOR green]Submit[/COLOR]</string>
+
   <string id="32100">System Settings</string>
   <string id="32101">Path to chromedriver</string>
   <string id="32102">Path to crx</string>

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
+import datetime
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 from resources.lib.line import Line
@@ -11,6 +12,8 @@ from resources.lib.common import log, notify
 
 class Monitor(xbmc.Monitor):
 
+    interval = 5
+
     def __init__(self, line):
         self.line = line
         xbmc.Monitor.__init__(self)
@@ -18,10 +21,20 @@ class Monitor(xbmc.Monitor):
     def onSettingsChanged(self):
         addon = xbmcaddon.Addon()
         talk = addon.getSetting('talk')
+        # トークを選択
         self.line.select(talk)
         folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
         if xbmc.getInfoLabel('Container.FolderPath').find(folderpath) == 0:
             xbmc.executebuiltin('Container.Update(%s,replace)' % folderpath)
+        # メッセージを送信
+        cache = Cache('submit','message.txt')
+        dt = int(datetime.datetime.now().strftime('%s')) - int(cache.date())
+        if dt < 2 * self.interval:
+            message = cache.read()
+            if message:
+                self.line.submit(message)
+        # 送信メッセージのファイルをクリア
+        Cache('submit').clear()
 
     def onScreensaverActivated(self):
         log('screensaver activated')
@@ -55,7 +68,7 @@ def service():
             monitor = Monitor(line)
             while not monitor.abortRequested():
                 # 停止を待機
-                if monitor.waitForAbort(5): break
+                if monitor.waitForAbort(monitor.interval): break
                 # キーをチェック
                 if not secret.check(): break
                 # 表示されているメッセージを取得

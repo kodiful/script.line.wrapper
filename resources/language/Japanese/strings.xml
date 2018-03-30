@@ -12,6 +12,10 @@
   <string id="32003">トーク</string>
   <string id="32004">[COLOR green]再ログイン[/COLOR]</string>
 
+  <string id="32300">メッセージ送信</string>
+  <string id="32302">メッセージ</string>
+  <string id="32303">[COLOR green]送信[/COLOR]</string>
+
   <string id="32100">システム設定</string>
   <string id="32101">chromedriverのパス</string>
   <string id="32102">crxファイルのパス</string>

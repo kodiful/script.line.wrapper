@@ -25,27 +25,35 @@ if __name__  == '__main__':
     talk = addon.getSetting('talk')
     # 必要なアドオン設定が揃っていたらメインの処理を実行
     if executable_path and extension_path and app_id and email and password and talk:
-        # メッセージ読み込み
-        messages = Cache('json').read_json()
-        # メッセージ表示
-        for m in reversed(messages):
-            # 日時
-            date = smartdate(m['year'],m['month'],m['day'],m['hour'],m['minute'])
-            # メッセージ
-            if m['ttl']:
-                message = '[COLOR yellow]%s[/COLOR] %s' % (m['ttl'], m['msg'])
-            else:
-                message = '%s' % (m['msg'])
-            # コンテクストメニュー
-            menu = []
-            menu.append((addon.getLocalizedString(32801), 'Addon.OpenSettings(%s)' % addon.getAddonInfo('id')))
-            # メニュー
-            item = xbmcgui.ListItem('%s %s' % (date,message), iconImage=m['img'], thumbnailImage=m['img'])
-            item.addContextMenuItems(menu, replaceItems=True)
-            xbmcplugin.addDirectoryItem(int(sys.argv[1]), '', item, False)
-        xbmcplugin.endOfDirectory(int(sys.argv[1]), True)
         # リセット
-        if action and action[0] == 'reset':
-            threading.Thread(target=service).start()
+        if action:
+            if action[0] == 'reset':
+                threading.Thread(target=service).start()
+            elif action[0] == 'submit':
+                # メッセージをファイルに書き出し送信はserviceにまかせる
+                message = addon.getSetting('message')
+                Cache('submit','message.txt').write(message)
+        else:
+            # 送信メッセージのファイルをクリア
+            Cache('submit').clear()
+            # メッセージ読み込み
+            messages = Cache('json').read_json()
+            # メッセージ表示
+            for m in reversed(messages):
+                # 日時
+                date = smartdate(m['year'],m['month'],m['day'],m['hour'],m['minute'])
+                # メッセージ
+                if m['ttl']:
+                    message = '[COLOR yellow]%s[/COLOR] %s' % (m['ttl'], m['msg'])
+                else:
+                    message = '%s' % (m['msg'])
+                # コンテクストメニュー
+                menu = []
+                menu.append((addon.getLocalizedString(32801), 'Addon.OpenSettings(%s)' % addon.getAddonInfo('id')))
+                # メニュー
+                item = xbmcgui.ListItem('%s %s' % (date,message), iconImage=m['img'], thumbnailImage=m['img'])
+                item.addContextMenuItems(menu, replaceItems=True)
+                xbmcplugin.addDirectoryItem(int(sys.argv[1]), '', item, False)
+            xbmcplugin.endOfDirectory(int(sys.argv[1]), True)
     else:
         addon.openSettings()
