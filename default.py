@@ -51,7 +51,8 @@ if __name__  == '__main__':
                 menu = []
                 menu.append((addon.getLocalizedString(32801), 'Addon.OpenSettings(%s)' % addon.getAddonInfo('id')))
                 # メニュー
-                item = xbmcgui.ListItem('%s %s' % (date,message), iconImage=m['img'], thumbnailImage=m['img'])
+                image = m['img'] or 'DefaultArtist.png'
+                item = xbmcgui.ListItem('%s %s' % (date,message), iconImage=image, thumbnailImage=image)
                 item.addContextMenuItems(menu, replaceItems=True)
                 xbmcplugin.addDirectoryItem(int(sys.argv[1]), '', item, False)
             xbmcplugin.endOfDirectory(int(sys.argv[1]), True)
