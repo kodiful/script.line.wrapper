@@ -22,10 +22,10 @@ class Monitor(xbmc.Monitor):
         addon = xbmcaddon.Addon()
         talk = addon.getSetting('talk')
         # トークを選択
-        self.line.select(talk)
-        folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
-        if xbmc.getInfoLabel('Container.FolderPath').find(folderpath) == 0:
-            xbmc.executebuiltin('Container.Update(%s,replace)' % folderpath)
+        if self.line.select(talk):
+            folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
+            if xbmc.getInfoLabel('Container.FolderPath').find(folderpath) == 0:
+                xbmc.executebuiltin('Container.Update(%s,replace)' % folderpath)
         # メッセージを送信
         cache = Cache('submit','message.txt')
         dt = int(datetime.datetime.now().strftime('%s')) - int(cache.date())
@@ -61,44 +61,44 @@ def service():
         line = Line(executable_path, extension_path, app_id)
         if line.open(email, password):
             # トークを選択
-            line.select(talk)
-            # 着信を監視
-            hash = ''
-            messages = []
-            monitor = Monitor(line)
-            while not monitor.abortRequested():
-                # 停止を待機
-                if monitor.waitForAbort(monitor.interval): break
-                # キーをチェック
-                if not secret.check(): break
-                # 表示されているメッセージを取得
-                messages = line.watch()
-                if messages:
-                    # 差分の有無をチェック
-                    talk1 = xbmcaddon.Addon().getSetting('talk')
-                    hash1 = hashlib.md5(str(messages)).hexdigest()
-                    # 差分があれば通知
-                    if hash != hash1 and Cache('json').write_json(messages):
-                        # 画面切り替え
-                        cec = xbmcaddon.Addon().getSetting('cec')
-                        if cec == 'true':
-                            xbmc.executebuiltin('CECActivateSource')
-                        folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
-                        if xbmc.getInfoLabel('Container.FolderPath').find(folderpath) == 0:
-                            xbmc.executebuiltin('Container.Update(%s,replace)' % folderpath)
-                        elif cec == 'true':
-                            xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
-                        # 通知
-                        m = messages[-1]
-                        if m['ttl']:
-                            notify('%s > %s' %(m['ttl'],m['msg']))
-                        else:
-                            notify(m['msg'])
-                    # ハッシュを記録
-                    hash = hash1
-                else:
-                    # メッセージが取得できない
-                    break
+            if line.select(talk):
+                # 着信を監視
+                hash = ''
+                messages = []
+                monitor = Monitor(line)
+                while not monitor.abortRequested():
+                    # 停止を待機
+                    if monitor.waitForAbort(monitor.interval): break
+                    # キーをチェック
+                    if not secret.check(): break
+                    # 表示されているメッセージを取得
+                    messages = line.watch()
+                    if messages:
+                        # 差分の有無をチェック
+                        talk1 = xbmcaddon.Addon().getSetting('talk')
+                        hash1 = hashlib.md5(str(messages)).hexdigest()
+                        # 差分があれば通知
+                        if hash != hash1 and Cache('json').write_json(messages):
+                            # 画面切り替え
+                            cec = xbmcaddon.Addon().getSetting('cec')
+                            if cec == 'true':
+                                xbmc.executebuiltin('CECActivateSource')
+                            folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
+                            if xbmc.getInfoLabel('Container.FolderPath').find(folderpath) == 0:
+                                xbmc.executebuiltin('Container.Update(%s,replace)' % folderpath)
+                            elif cec == 'true':
+                                xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
+                            # 通知
+                            m = messages[-1]
+                            if m['ttl']:
+                                notify('%s > %s' %(m['ttl'],m['msg']))
+                            else:
+                                notify(m['msg'])
+                        # ハッシュを記録
+                        hash = hash1
+                    else:
+                        # メッセージが取得できない
+                        break
         # LINEを終了
         line.close()
         # キーをクリア

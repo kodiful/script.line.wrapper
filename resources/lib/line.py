@@ -61,7 +61,8 @@ class Line:
         except Exception as e:
             log(traceback.format_exc())
             notify('Login failed', error=True, time=3000)
-            return 0
+            self.close()
+        return 0
 
     def select(self, talk):
         try:
@@ -70,13 +71,12 @@ class Line:
             elem = self.driver.find_element_by_id('_chat_list_body')
             elem2 = elem.find_element_by_xpath("./li[@title='%s']" % talk.decode('utf-8'))
             elem2.click()
+            return 1
         except Exception as e:
             log(traceback.format_exc())
             notify('Selection failed', error=True, time=3000)
-
-    def close(self):
-        # 終了
-        self.driver.close()
+            self.close()
+        return 0
 
     def watch(self):
         try:
@@ -109,7 +109,7 @@ class Line:
                         ttl = elem3.find_element_by_xpath("./div[@class='mdRGT07Body']/div[@class='mdRGT07Ttl']").get_attribute('textContent').encode('utf-8')
                         img = elem3.find_element_by_xpath("./div[@class='mdRGT07Img']/img").get_attribute('src').encode('utf-8')
                         filepath = self.cache.path(hashlib.md5(ttl).hexdigest())
-                        self.savebinary(img, filepath)
+                        self.__savebinary(img, filepath)
                     else:
                         ttl = ''
                         filepath = ''
@@ -129,9 +129,10 @@ class Line:
         except Exception as e:
             log(traceback.format_exc())
             notify('Extraction failed', error=True, time=3000)
-            return None
+            self.close()
+        return 0
 
-    def savebinary(self, url, filepath):
+    def __savebinary(self, url, filepath):
         # スクリプト
         script = """
         var get_resource = function(url) {
@@ -140,9 +141,9 @@ class Line:
             req.overrideMimeType('text/plain; charset=x-user-defined');
             req.send(null);
             var bytes = [];
-            if(req.status == 200) {
+            if (req.status == 200) {
                 var data = req.responseText;
-                for (var i = 0; i < data.length; i++){
+                for (var i = 0; i < data.length; i++) {
                     bytes[i] = data.charCodeAt(i) & 0xff;
                 }
             }
@@ -165,6 +166,13 @@ class Line:
             elem.click()
             elem.send_keys(message)
             elem.send_keys(Keys.ENTER)
+            return 1
         except:
             log(traceback.format_exc())
             notify('Submission failed', error=True, time=3000)
+            self.close()
+        return 0
+
+    def close(self):
+        # driverを終了
+        self.driver.quit()
