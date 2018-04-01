@@ -65,10 +65,15 @@ class Cache:
 
     def write_json(self, data):
         # 既存データ
-        cur_data = self.read()
-        # 書き込みデータ
-        new_data = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
-        if new_data != cur_data:
+        cur_data = self.read_json()
+        len_cmp = min(10, len(data))
+        cur_cmp = json.dumps(cur_data[-len_cmp:], sort_keys=True, ensure_ascii=False, indent=2).encode('utf-8')
+        new_cmp = json.dumps(data[-len_cmp:], sort_keys=True, ensure_ascii=False, indent=2)
+        # 比較
+        if new_cmp != cur_cmp:
+            # 書き込みデータ
+            new_data = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
+            # 書き込み
             self.write(new_data)
             return True
         else:
