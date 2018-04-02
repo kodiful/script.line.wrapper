@@ -75,25 +75,29 @@ def service():
                     messages = line.watch()
                     if messages:
                         # 差分の有無をチェック
-                        talk1 = xbmcaddon.Addon().getSetting('talk')
                         hash1 = hashlib.md5(str(messages)).hexdigest()
                         # 差分があれば通知
-                        if hash != hash1 and Cache('json').write_json(messages):
-                            # 画面切り替え
-                            cec = xbmcaddon.Addon().getSetting('cec')
-                            if cec == 'true':
-                                xbmc.executebuiltin('CECActivateSource')
-                            folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
-                            if xbmc.getInfoLabel('Container.FolderPath').find(folderpath) == 0:
-                                xbmc.executebuiltin('Container.Update(%s,replace)' % folderpath)
-                            elif cec == 'true':
-                                xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
-                            # 通知
-                            m = messages[-1]
-                            if m['ttl']:
-                                notify('%s > %s' %(m['ttl'],m['msg']))
-                            else:
-                                notify(m['msg'])
+                        if hash != hash1:
+                            status = Cache('json').write_json(messages)
+                            if status is not None:
+                                # 既存データがある場合は画面を切り替えて通知する
+                                if status > 0:
+                                    # 画面切り替え
+                                    cec = xbmcaddon.Addon().getSetting('cec')
+                                    if cec == 'true':
+                                        xbmc.executebuiltin('CECActivateSource')
+                                    # 通知
+                                    m = messages[-1]
+                                    if m['ttl']:
+                                        notify('%s > %s' %(m['ttl'],m['msg']))
+                                    else:
+                                        notify(m['msg'])
+                                # 既存データの有無にかかわらず差分がある場合はとりあえず表示する
+                                folderpath = 'plugin://%s/' % addon.getAddonInfo('id')
+                                if xbmc.getInfoLabel('Container.FolderPath').find(folderpath) == 0:
+                                    xbmc.executebuiltin('Container.Update(%s,replace)' % folderpath)
+                                elif cec == 'true':
+                                    xbmc.executebuiltin('RunAddon(%s)' % addon.getAddonInfo('id'))
                         # ハッシュを記録
                         hash = hash1
                     else:

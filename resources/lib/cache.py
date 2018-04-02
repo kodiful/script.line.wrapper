@@ -79,6 +79,6 @@ class Cache:
             # 書き込み
             self.write(new_data)
             # 既存データがある場合はTrueを返す
-            return cur_len > 0
+            return cur_len
         else:
-            return False
+            return None
