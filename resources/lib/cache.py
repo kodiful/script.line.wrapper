@@ -66,15 +66,19 @@ class Cache:
     def write_json(self, data):
         # 既存データ
         cur_data = self.read_json()
-        len_cmp = min(10, len(data))
-        cur_cmp = json.dumps(cur_data[-len_cmp:], sort_keys=True, ensure_ascii=False, indent=2).encode('utf-8')
-        new_cmp = json.dumps(data[-len_cmp:], sort_keys=True, ensure_ascii=False, indent=2)
+        # 既存データの配列の長さ
+        cur_len = len(cur_data)
+        # 新しいものから最大10のデータを比較する
+        cmp_len = min(10, len(data))
+        cur_cmp = json.dumps(cur_data[-cmp_len:], sort_keys=True, ensure_ascii=False, indent=2).encode('utf-8')
+        new_cmp = json.dumps(data[-cmp_len:], sort_keys=True, ensure_ascii=False, indent=2)
         # 比較
         if new_cmp != cur_cmp:
             # 書き込みデータ
             new_data = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
             # 書き込み
             self.write(new_data)
-            return True
+            # 既存データがある場合はTrueを返す
+            return cur_len > 0
         else:
             return False
