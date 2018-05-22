@@ -9,7 +9,7 @@
   <string id="32000">LINE Settings</string>
   <string id="32001">Mail address</string>
   <string id="32002">Password</string>
-  <string id="32003">Talk</string>
+  <string id="32003">Talkroom</string>
   <string id="32004">[COLOR green]Relogin[/COLOR]</string>
 
   <string id="32300">Submit Message</string>
@@ -19,7 +19,6 @@
   <string id="32100">System Settings</string>
   <string id="32101">Path to chromedriver</string>
   <string id="32102">Path to crx</string>
-  <string id="32103">App ID</string>
 
   <string id="32200">Others</string>
   <string id="32201">Switch screen on incoming</string>

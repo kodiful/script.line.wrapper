@@ -15,12 +15,9 @@
     <setting label="32302" id="message" type="text" default=""/>
     <setting label="32303" type="action" option="close" action="RunPlugin(plugin://$ID/?action=submit)"/>
   </category>
-  <category label="32100">
+  <category label="32200">
     <setting label="32101" id="executable_path" type="file" default=""/>
     <setting label="32102" id="extension_path" type="file" default=""/>
-    <setting label="32103" id="app_id" type="text" default=""/>
-  </category>
-  <category label="32200">
     <setting label="32201" id="cec" type="bool" default="false"/>
     <setting label="32299" id="debug" type="bool" default="false"/>
   </category>

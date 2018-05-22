@@ -50,15 +50,14 @@ def service():
     # 設定
     executable_path = addon.getSetting('executable_path')
     extension_path = addon.getSetting('extension_path')
-    app_id = addon.getSetting('app_id')
     email = addon.getSetting('email')
     password = addon.getSetting('password')
     talk = addon.getSetting('talk')
-    if executable_path and extension_path and app_id and email and password and talk:
+    if executable_path and extension_path and email and password:
         # キーを初期化
         secret = Secret(renew=True)
         # LINEにログイン
-        line = Line(executable_path, extension_path, app_id)
+        line = Line(executable_path, extension_path)
         if line.open(email, password):
             # トークを選択
             if line.select(talk):
@@ -80,16 +79,17 @@ def service():
                         if hash != hash1:
                             status = Cache('json').write_json(messages)
                             if status is not None:
+                                # アドオン設定
+                                cec = xbmcaddon.Addon().getSetting('cec')
                                 # 既存データがある場合は画面を切り替えて通知する
                                 if status > 0:
                                     # 画面切り替え
-                                    cec = xbmcaddon.Addon().getSetting('cec')
                                     if cec == 'true':
                                         xbmc.executebuiltin('CECActivateSource')
                                     # 通知
                                     m = messages[-1]
                                     if m['ttl']:
-                                        notify('%s > %s' %(m['ttl'],m['msg']))
+                                        notify('%s > %s' % (m['ttl'],m['msg']))
                                     else:
                                         notify(m['msg'])
                                 # 既存データの有無にかかわらず差分がある場合はとりあえず表示する

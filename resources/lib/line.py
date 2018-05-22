@@ -18,12 +18,13 @@ from selenium.webdriver.common.keys import Keys
 
 class Line:
 
-    def __init__(self, executable_path, extension_path, app_id):
+    APP_ID = 'ophjlpahpchlmihnnnihgmmeilfjmjjc'
+
+    def __init__(self, executable_path, extension_path):
         # ウェブドライバを設定
         chrome_options = Options()
         chrome_options.add_extension(extension_path)
         self.driver = webdriver.Chrome(executable_path=executable_path, chrome_options=chrome_options)
-        self.app_id = app_id
         # HTTP接続におけるタイムアウト(秒)
         socket.setdefaulttimeout(60)
         # キャッシュ
@@ -33,7 +34,7 @@ class Line:
         try:
             # ページ読み込み
             self.driver.implicitly_wait(10)
-            self.driver.get('chrome-extension://%s/index.html' % self.app_id)
+            self.driver.get('chrome-extension://%s/index.html' % self.APP_ID)
             # メールアドレス
             elem = self.driver.find_element_by_id('line_login_email')
             elem.send_keys(email)
@@ -69,7 +70,10 @@ class Line:
             # 指定したトークを選択
             self.driver.implicitly_wait(10)
             elem = self.driver.find_element_by_id('_chat_list_body')
-            elem2 = elem.find_element_by_xpath("./li[@title='%s']" % talk.decode('utf-8'))
+            if talk == 'default':
+                elem2 = elem.find_element_by_xpath("./li[@title!='']")
+            else:
+                elem2 = elem.find_element_by_xpath("./li[@title='%s']" % talk.decode('utf-8'))
             elem2.click()
             return 1
         except Exception as e:
