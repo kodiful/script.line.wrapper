@@ -29,6 +29,7 @@ class Settings:
             if self.addon.getSetting('talk') == 'default':
                 self.addon.setSetting('talk', chatlist[0])
         else:
+            # 未設定の場合
             source = template.format(chatlist='default')
             self.addon.setSetting('talk', 'default')
         # ファイル書き込み
